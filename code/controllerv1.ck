@@ -3,7 +3,7 @@
 //
 
 // z axis deadzone
-0.25 => float DEADZONE;
+0.0 => float DEADZONE;
 
 
 // which joystick
@@ -60,15 +60,12 @@ NRev reverb[CHANNELS];
 //patch
 //LH
 //Shakers shake => JCRev r => dac;
-SinOsc lsin => JCRev rrev => dac;
-SinOsc rsin => JCRev lrev => dac;
+SinOsc sin => JCRev rev => dac;
 
 //setting gain
-.95 => lsin.gain;
-.95 => rsin.gain;
+.95 => sin.gain;
 //set the reverb
-.1 => rrev.mix;
-.1 => lrev.mix;
+.1 => rev.mix;
 //set instrument
 //22 => shake.which;
 
@@ -76,15 +73,13 @@ SinOsc rsin => JCRev lrev => dac;
 // main loop
 while( true )
 {
-    <<< gt.axis[0] >>>;
+    <<< gt.axis[2] >>>;
     
     // 100 * gt.axis[5] => sin.freq;
     
-    200 + Std.mtof(Std.ftom(600 * (1 - gt.axis[0])) $ int) => rsin.freq;
-    gt.axis[2] * 3 => rsin.gain;
+    600 * (gt.axis[2]) *3 => sin.freq;
     
-    200 + Std.mtof(Std.ftom(600 * (1 - gt.axis[3])) $ int) => lsin.freq;
-    gt.axis[5] * 3 => lsin.gain;
+    gt.axis[5] * 5 => sin.gain;
 
     3::ms => now;
 }
