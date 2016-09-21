@@ -84,7 +84,7 @@ true => int quantized;
 [0, 3, 5, 6, 7, 10] @=> int bluescale[];
 [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11] @=> int chromscale[];
 
-harminscale @=> int scale[];
+majscale @=> int scale[];
 
 0 => int key;
 

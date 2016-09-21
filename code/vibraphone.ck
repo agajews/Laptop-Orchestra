@@ -74,7 +74,7 @@ ModalBar bar => dac;
 // Math.random2f( .5, 1 ) => bar.directGain;
 // Math.random2f( .5, 1 ) => bar.masterGain;
 
-0 => bar.preset;
+10 => bar.preset;
 0.852907 => bar.stickHardness;
 0.316241 => bar.strikePosition;
 0.475425 => bar.vibratoGain;
