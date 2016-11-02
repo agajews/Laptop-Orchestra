@@ -76,18 +76,11 @@ class Note {
 
     // ==========================================================================
     // Your instrument here
-    Clarinet c => ADSR a => Gain g => p;
+    SinOsc s => ADSR a => Gain g => p;
     0.3 => g.gain;
-    0.5 => c.noteOn;
-    0.0 => c.startBlowing;
-    1.0 => c.vibratoGain;
-    0 => c.vibratoFreq;
-    0.6 => c.pressure;
-    0.8 => c.noiseGain;
-    0.5 => c.reed;
 
     // set a, d, s, and r
-    a.set(10::ms, 8::ms, .5, 50::ms);
+    a.set(10::ms, 8::ms, .5, 100::ms);
     // ==========================================================================
 
     fun static Note Note(int note){
@@ -99,8 +92,7 @@ class Note {
     // ==========================================================================
     // Set how to play your note
     fun void play(){
-        c => a;
-        freq => c.freq;
+        freq => s.freq;
         1 => a.keyOn;
         while(playing){
             10::ms => now;
@@ -118,7 +110,7 @@ class Note {
         0 => playing;
         1 => a.keyOff;
         1::second => now;
-        c =< a =< g =< p;
+        s =< a =< g =< p;
         me.exit();
     }
     // ==========================================================================
