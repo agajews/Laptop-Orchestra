@@ -63,11 +63,12 @@ spork ~ gtupdate(gt, trak);
 
 // ==========================================================================
 // Select a (midi) key and a scale
-60 => int key;
+46 => int key;
 [0, 2, 4, 5] @=> int lscale[];
 [7, 9, 11, 12] @=> int rscale[];
 
 PRCRev p => dac;
+0.1 => p.mix;
 
 class Note {
     float freq;
@@ -102,7 +103,7 @@ class Note {
 
     // how to change its volume
     fun void set_par(float par) {
-        par + 0.1 => g.gain;
+        par / 2.0 + 0.1 => g.gain;
     }
 
     // And how to stop it
