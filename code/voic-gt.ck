@@ -39,6 +39,7 @@ fun void gtupdate(GameTrak gt, Hid trak) {
                 if (msg.which == 4) {msg.axisPosition => gt.ry;}
                 if (msg.which == 5) {1 - msg.axisPosition => gt.rz;}
             } else if (msg.isButtonDown()) {
+              <<<"Pedal down">>>;
                 1 => gt.pedal;
             } else if (msg.isButtonUp()) {
                 0 => gt.pedal;

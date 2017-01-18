@@ -66,13 +66,12 @@ GameTrak gt;
 
 spork ~ gtupdate(gt, trak);
 
-SinOsc s;
-0.3 => s.gain;
-s => Gain leftg => dac;
-s => Gain rightg => dac;
-0.5 => leftg.gain;
-0.5 => rightg.gain;
-60 => Std.mtof => s.freq;
+SinOsc lsin => dac;
+SinOsc rsin => dac;
+0.3 => lsin.gain;
+0.3 => rsin.gain;
+60 => Std.mtof => lsin.freq;
+60 => Std.mtof => rsin.freq;
 
 fun float bound(float x, float min, float max) {
   if (x < min) {
@@ -84,14 +83,14 @@ fun float bound(float x, float min, float max) {
   return x;
 }
 
-fun float calc_gain(float vel, float old) {
-  bound(vel / 3.0, 0, 0.8) => float newGain;
-  return bound(0.99 * old + 0.01 * newGain, 0, 0.8);
+fun float calc_pitch(float vel, float old) {
+  bound(vel * 30, 50, 100) => float new_pitch;
+  return bound(0.99 * old + 0.01 * new_pitch, 50, 100);
 }
 
 while(true){
-  <<<leftg.gain(), rightg.gain()>>>;
-  calc_gain(gt.lvelocity, leftg.gain()) => leftg.gain;
-  calc_gain(gt.rvelocity, rightg.gain()) => rightg.gain;
+  <<<lsin.freq() => Std.ftom, rsin.freq() => Std.ftom>>>;
+  calc_pitch(gt.lvelocity, lsin.freq() => Std.ftom) => Std.mtof => lsin.freq;
+  calc_pitch(gt.rvelocity, rsin.freq() => Std.ftom) => Std.mtof => rsin.freq;
   10::ms => now;
 }
