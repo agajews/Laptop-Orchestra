@@ -86,7 +86,7 @@ fun float bound(float x, float min, float max) {
 
 fun float calc_gain(float vel, float old) {
   bound(vel / 3.0, 0, 0.8) => float newGain;
-  return bound(0.95 * old + 0.05 * newGain, 0, 0.8);
+  return bound(0.99 * old + 0.01 * newGain, 0, 0.8);
 }
 
 while(true){
