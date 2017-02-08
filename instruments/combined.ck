@@ -72,8 +72,10 @@ fun void gtupdate(GameTrak gt, Hid trak) {
     Std.fabs(gt.rx - last_rx) + Std.fabs(gt.ry - last_ry) => float rdisplacement;
     // Math.sqrt( Math.pow((gt.lx - last_lx), 2) + Math.pow((gt.ly - last_ly), 2) ) => ldisplacement;
     // Math.sqrt( Math.pow((gt.rx - last_rx), 2) + Math.pow((gt.ry - last_ry), 2) ) => rdisplacement;
-    ldisplacement /((gt.currTime - gt.lastTime) / 1::second) => gt.lvelocity;
-    rdisplacement /((gt.currTime - gt.lastTime) / 1::second) => gt.rvelocity;
+    if ((gt.currTime - gt.lastTime) / 1::second > 0) {
+      ldisplacement /((gt.currTime - gt.lastTime) / 1::second) => gt.lvelocity;
+      rdisplacement /((gt.currTime - gt.lastTime) / 1::second) => gt.rvelocity;
+    }
     if (Std.fabs(gt.lvelocity) < 2.5) {
       0 => gt.lvelocity;
     }
@@ -244,6 +246,7 @@ prep_clarinet(rc);
 62 => Std.mtof => rc.freq;
 
 fun float bound(float x, float min, float max) {
+  return x;
   if (x < min) {
     return min;
   }
@@ -276,10 +279,10 @@ while(true){
     }
   }
   if (mode == 1) {
-    // <<<lc.gain(), rc.gain()>>>;
-    <<<gt.lvelocity, gt.rvelocity>>>;
+    <<<gt.lvelocity, gt.rvelocity, lc.gain(), rc.gain()>>>;
+    // <<<gt.lvelocity, gt.rvelocity>>>;
     // <<<(now - gt.lastTime)/1::second, gt.lvelocity>>>;
-    if ((now - gt.lastTime) > 0.01::second) {
+    if ((now - gt.lastTime) > 0.05::second) {
       0 => gt.lvelocity;
       0 => gt.rvelocity;
     }
