@@ -44,8 +44,6 @@ fun void gtupdate(GameTrak gt, Hid trak) {
   0.0 => float last_ly;
   0.0 => float last_lz;
 
-  0.0 => float ldisplacement;
-  0.0 => float rdisplacement;
   while (true) {
     // wait for event
     trak => now;
@@ -56,12 +54,12 @@ fun void gtupdate(GameTrak gt, Hid trak) {
       gt.pedal => gt.prev_pedal;
       if (msg.isAxisMotion()) {
         if (msg.which >= 0 && msg.which < 6) {
-          if (msg.which == 0) {gt.lx => last_lx; msg.axisPosition => gt.lx;}
-          if (msg.which == 1) {gt.ly => last_ly; msg.axisPosition => gt.ly;}
-          if (msg.which == 2) {gt.lz => last_lz; 1 - msg.axisPosition => gt.lz;}
-          if (msg.which == 3) {gt.rx => last_rx; msg.axisPosition => gt.rx;}
-          if (msg.which == 4) {gt.ry => last_ry; msg.axisPosition => gt.ry;}
-          if (msg.which == 5) {gt.rz => last_rz; 1 - msg.axisPosition => gt.rz;}
+          if (msg.which == 0) {msg.axisPosition => gt.lx;}
+          if (msg.which == 1) {msg.axisPosition => gt.ly;}
+          if (msg.which == 2) {1 - msg.axisPosition => gt.lz;}
+          if (msg.which == 3) {msg.axisPosition => gt.rx;}
+          if (msg.which == 4) {msg.axisPosition => gt.ry;}
+          if (msg.which == 5) {1 - msg.axisPosition => gt.rz;}
         }
       } else if (msg.isButtonDown()) {
         1 => gt.pedal;
@@ -69,11 +67,26 @@ fun void gtupdate(GameTrak gt, Hid trak) {
         0 => gt.pedal;
         1 => gt.pedalReleased;
       }
-      Math.sqrt( Math.pow((gt.lx - last_lx), 2) + Math.pow((gt.ly - last_ly), 2) ) => ldisplacement;
-      Math.sqrt( Math.pow((gt.rx - last_rx), 2) + Math.pow((gt.ry - last_ry), 2) ) => rdisplacement;
-      ldisplacement /((gt.currTime - gt.lastTime) / 1::second) => gt.lvelocity;
-      rdisplacement /((gt.currTime - gt.lastTime) / 1::second) => gt.rvelocity;
     }
+    Std.fabs(gt.lx - last_lx) + Std.fabs(gt.ly - last_ly) => float ldisplacement;
+    Std.fabs(gt.rx - last_rx) + Std.fabs(gt.ry - last_ry) => float rdisplacement;
+    // Math.sqrt( Math.pow((gt.lx - last_lx), 2) + Math.pow((gt.ly - last_ly), 2) ) => ldisplacement;
+    // Math.sqrt( Math.pow((gt.rx - last_rx), 2) + Math.pow((gt.ry - last_ry), 2) ) => rdisplacement;
+    ldisplacement /((gt.currTime - gt.lastTime) / 1::second) => gt.lvelocity;
+    rdisplacement /((gt.currTime - gt.lastTime) / 1::second) => gt.rvelocity;
+    if (Std.fabs(gt.lvelocity) < 2.5) {
+      0 => gt.lvelocity;
+    }
+    if (Std.fabs(gt.rvelocity) < 2.5) {
+      0 => gt.rvelocity;
+    }
+    gt.lx => last_lx;
+    gt.ly => last_ly;
+    gt.lz => last_lz;
+
+    gt.rx => last_rx;
+    gt.ry => last_ry;
+    gt.rz => last_rz;
   }
 }
 
@@ -263,8 +276,10 @@ while(true){
     }
   }
   if (mode == 1) {
-    <<<lc.gain(), rc.gain()>>>;
-    if ((now - gt.lastTime) > 0.05::second) {
+    // <<<lc.gain(), rc.gain()>>>;
+    <<<gt.lvelocity, gt.rvelocity>>>;
+    // <<<(now - gt.lastTime)/1::second, gt.lvelocity>>>;
+    if ((now - gt.lastTime) > 0.01::second) {
       0 => gt.lvelocity;
       0 => gt.rvelocity;
     }
