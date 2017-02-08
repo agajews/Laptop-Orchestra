@@ -103,8 +103,8 @@ spork ~ gtupdate(gt, trak);
 /////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////
 
-76 => int key;
-[0, 2, 4, 9] @=> int scale[];
+64 => int key;
+[0, 4, 7, 9] @=> int scale[];
 
 PRCRev p => dac;
 0.1 => p.mix;
@@ -116,11 +116,10 @@ class Note {
 
     // ==========================================================================
     // Your instrument here
-    TubeBell b => Gain g => p;
-    0.3 => g.gain;
+    SinOsc b => ADSR a => p;
 
     // set a, d, s, and r
-    /*a.set(10::ms, 8::ms, .5, 100::ms);*/
+    a.set(10::ms, 80::ms, .5, 100::ms);
     // ==========================================================================
 
     fun static Note Note(int note){
@@ -133,24 +132,19 @@ class Note {
     // Set how to play your note
     fun void play(){
         freq => b.freq;
-        1 => b.noteOn;
+        1 => a.keyOn;
         while(playing){
             10::ms => now;
         }
         me.exit();
     }
 
-    // how to change its volume
-    fun void set_par(float par) {
-        /*par / 2.0 + 0.1 => g.gain;*/
-    }
-
     // And how to stop it
     fun void stop(){
         0 => playing;
-        /*0.1 => b.noteOff;*/
+        1 => a.keyOff;
         10::second => now;
-        b =< g =< p;
+        b =< a =< p;
         me.exit();
     }
     // ==========================================================================
@@ -216,8 +210,6 @@ fun Note play(float x, float y, float z, float prev_x, float prev_y, float prev_
         }
     }
 
-    plr_rad(x, y) => float par;
-    held.set_par(par);
     return held;
 }
 
