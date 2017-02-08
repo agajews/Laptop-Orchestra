@@ -264,7 +264,7 @@ while(true){
   }
   if (mode == 1) {
     <<<lc.gain(), rc.gain()>>>;
-    if ((now - gt.lastTime) > 0.25::second) {
+    if ((now - gt.lastTime) > 0.05::second) {
       0 => gt.lvelocity;
       0 => gt.rvelocity;
     }
