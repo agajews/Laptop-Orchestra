@@ -73,8 +73,8 @@ fun void gtupdate(GameTrak gt, Hid trak) {
     // Math.sqrt( Math.pow((gt.lx - last_lx), 2) + Math.pow((gt.ly - last_ly), 2) ) => ldisplacement;
     // Math.sqrt( Math.pow((gt.rx - last_rx), 2) + Math.pow((gt.ry - last_ry), 2) ) => rdisplacement;
     if ((gt.currTime - gt.lastTime) / 1::second > 0) {
-      ldisplacement /((gt.currTime - gt.lastTime) / 1::second) => gt.lvelocity;
-      rdisplacement /((gt.currTime - gt.lastTime) / 1::second) => gt.rvelocity;
+      bound(ldisplacement /((gt.currTime - gt.lastTime) / 1::second), 0, 0.1) => gt.lvelocity;
+      bound(rdisplacement /((gt.currTime - gt.lastTime) / 1::second), 0, 0.1) => gt.rvelocity;
     }
     if (Std.fabs(gt.lvelocity) < 2.5) {
       0 => gt.lvelocity;
@@ -256,15 +256,21 @@ fun float bound(float x, float min, float max) {
   return x;
 }
 
-fun float calc_gain(float vel, float old) {
-  bound(vel * 0.5, 0, 1.5) => float new_gain;
-  return bound(0.99 * old + 0.01 * new_gain, 0, 0.8);
+fun float calc_target(float vel, float old_target) {
+  bound(vel * 0.5, 0, 1.5) => float new_target;
+  return bound(0.9 * old_target + 0.1 * new_target, 0, 0.8);
+}
+
+fun float calc_gain(float target, float old_gain) {
+  return bound(old_gain + (target - old_gain) * 0.05, 0, 0.8);
 }
 
 Note held[2];
 0 => int mode;
-0 => float lc_gain;
-0 => float rc_gain;
+0 => float r_gain;
+0 => float l_gain;
+0 => float r_target;
+0 => float l_target;
 0 => lc.gain;
 0 => rc.gain;
 while(true){
@@ -288,10 +294,14 @@ while(true){
       0 => gt.lvelocity;
       0 => gt.rvelocity;
     }
-    calc_gain(gt.lvelocity, lc_gain) => lc_gain;
-    calc_gain(gt.rvelocity, rc_gain) => rc_gain;
-    lc_gain * 0.005 => lc.gain;
-    rc_gain * 0.005 => rc.gain;
+    calc_target(gt.lvelocity, l_target) => l_target;
+    calc_target(gt.rvelocity, r_target) => r_target;
+
+    calc_gain(l_target, l_gain) => l_gain;
+    calc_gain(r_target, r_gain) => r_gain;
+
+    l_gain * 0.005 => lc.gain;
+    r_gain * 0.005 => rc.gain;
   } else {  // mode == 0
     play(gt.rx, gt.ry, gt.rz, gt.prev_rx, gt.prev_ry, gt.prev_rz, scale, held[0], 0) @=> held[0];
     play(gt.lx, gt.ly, gt.lz, gt.prev_lx, gt.prev_ly, gt.prev_lz, scale, held[1], 1) @=> held[1];
