@@ -106,7 +106,8 @@ spork ~ gtupdate(gt, trak);
 64 => int key;
 [-3, -2, 0, 2] @=> int scale[];
 
-PRCRev p => dac;
+PRCRev p => Gain g => dac;
+5 => g.gain;
 0.1 => p.mix;
 
 class Note {
@@ -119,7 +120,7 @@ class Note {
     SinOsc b => ADSR a => p;
 
     // set a, d, s, and r
-    a.set(10::ms, 80::ms, .5, 100::ms);
+    a.set(250::ms, 80::ms, 1, 100::ms);
     // ==========================================================================
 
     fun static Note Note(int note){
