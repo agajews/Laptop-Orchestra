@@ -117,7 +117,7 @@ class Note {
     // ==========================================================================
     // Your instrument here
     TubeBell b => Gain g => p;
-    0.3 => g.gain;
+    0.02 => g.gain;
 
     // set a, d, s, and r
     /*a.set(10::ms, 8::ms, .5, 100::ms);*/
@@ -263,6 +263,8 @@ fun float calc_gain(float vel, float old) {
 
 Note held[2];
 0 => int mode;
+0 => float lc_gain;
+0 => float rc_gain;
 0 => lc.gain;
 0 => rc.gain;
 while(true){
@@ -286,8 +288,10 @@ while(true){
       0 => gt.lvelocity;
       0 => gt.rvelocity;
     }
-    calc_gain(gt.lvelocity, lc.gain()) => lc.gain;
-    calc_gain(gt.rvelocity, rc.gain()) => rc.gain;
+    calc_gain(gt.lvelocity, lc_gain) => lc_gain;
+    calc_gain(gt.rvelocity, rc_gain) => rc_gain;
+    lc_gain * 0.005 => lc.gain;
+    rc_gain * 0.005 => rc.gain;
   } else {  // mode == 0
     play(gt.rx, gt.ry, gt.rz, gt.prev_rx, gt.prev_ry, gt.prev_rz, scale, held[0], 0) @=> held[0];
     play(gt.lx, gt.ly, gt.lz, gt.prev_lx, gt.prev_ly, gt.prev_lz, scale, held[1], 1) @=> held[1];

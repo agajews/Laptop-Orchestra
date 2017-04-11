@@ -104,7 +104,7 @@ spork ~ gtupdate(gt, trak);
 /////////////////////////////////////////////////////////
 
 64 => int key;
-[0, 4, 7, 9] @=> int scale[];
+[-3, -2, 0, 2] @=> int scale[];
 
 PRCRev p => dac;
 0.1 => p.mix;
