@@ -103,8 +103,8 @@ spork ~ gtupdate(gt, trak);
 /////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////
 
-64 => int key;
-[0, 2, 4, 9] @=> int scale[];
+53 => float key;
+[1.5, 8, 11, 17] @=> float scale[];
 
 PRCRev p => dac;
 0.1 => p.mix;
@@ -117,13 +117,14 @@ class Note {
     // ==========================================================================
     // Your instrument here
     TubeBell b => Gain g => p;
+    0 => b.controlTwo;
     0.02 => g.gain;
 
     // set a, d, s, and r
     /*a.set(10::ms, 8::ms, .5, 100::ms);*/
     // ==========================================================================
 
-    fun static Note Note(int note){
+    fun static Note Note(float note){
         Note n;
         note => Std.mtof => n.freq;
         return n;
@@ -200,7 +201,7 @@ fun int calc_zone(float x, float y, int side) {
     return 1 - side;
 }
 
-fun Note play(float x, float y, float z, float prev_x, float prev_y, float prev_z, int scale[], Note held, int side) {
+fun Note play(float x, float y, float z, float prev_x, float prev_y, float prev_z, float scale[], Note held, int side) {
     calc_zone(x, y, side) => int zone;
     calc_zone(prev_x, prev_y, side) => int prev_zone;
 
@@ -210,7 +211,7 @@ fun Note play(float x, float y, float z, float prev_x, float prev_y, float prev_
             spork ~ held.stop();
         }
         if (zone >= 0) {
-            key + scale[zone] => int note;
+            key + scale[zone] => float note;
             Note.Note(note) @=> held;
             spork ~ held.play();
         }
