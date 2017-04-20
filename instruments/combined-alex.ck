@@ -73,14 +73,10 @@ fun void gtupdate(GameTrak gt, Hid trak) {
     // Math.sqrt( Math.pow((gt.lx - last_lx), 2) + Math.pow((gt.ly - last_ly), 2) ) => ldisplacement;
     // Math.sqrt( Math.pow((gt.rx - last_rx), 2) + Math.pow((gt.ry - last_ry), 2) ) => rdisplacement;
     if ((gt.currTime - gt.lastTime) / 1::second > 0) {
-      bound(ldisplacement /((gt.currTime - gt.lastTime) / 1::second), 0, 0.1) => gt.lvelocity;
-      bound(rdisplacement /((gt.currTime - gt.lastTime) / 1::second), 0, 0.1) => gt.rvelocity;
-    }
-    if (Std.fabs(gt.lvelocity) < 2.5) {
-      0 => gt.lvelocity;
-    }
-    if (Std.fabs(gt.rvelocity) < 2.5) {
-      0 => gt.rvelocity;
+      bound(ldisplacement /((gt.currTime - gt.lastTime) / 1::second), 0, 20) => gt.lvelocity;
+      bound(rdisplacement /((gt.currTime - gt.lastTime) / 1::second), 0, 20) => gt.rvelocity;
+      if (gt.lvelocity < 1) { 0 => gt.lvelocity; }
+      if (gt.rvelocity < 1) { 0 => gt.rvelocity; }
     }
     gt.lx => last_lx;
     gt.ly => last_ly;
@@ -105,7 +101,7 @@ spork ~ gtupdate(gt, trak);
 
 53 => float key;
 [1.5, 8, 11, 17] @=> float scale[];
-[6., 17, 18, 22] @=> float scale_1[];
+[6., 17, 18, 22] @=> float scale_2[];
 
 PRCRev p => dac;
 0.1 => p.mix;
@@ -119,7 +115,7 @@ class Note {
     // Your instrument here
     TubeBell b => Gain g => p;
     0 => b.controlTwo;
-    0.02 => g.gain;
+    0.03 => g.gain;
 
     // set a, d, s, and r
     /*a.set(10::ms, 8::ms, .5, 100::ms);*/
@@ -207,7 +203,7 @@ fun Note play(float x, float y, float z, float prev_x, float prev_y, float prev_
     calc_zone(prev_x, prev_y, side) => int prev_zone;
 
     if (prev_zone != zone) {  // crossed border
-        <<<zone>>>;
+        // <<<zone>>>;
         if (prev_zone >= 0) {
             spork ~ held.stop();
         }
@@ -244,11 +240,10 @@ prep_clarinet(rc);
 
 1.5 => lc.gain;
 1.5 => rc.gain;
-60 => Std.mtof => lc.freq;
-62 => Std.mtof => rc.freq;
+53 + 22 => Std.mtof => lc.freq;
+53 + 22 => Std.mtof => rc.freq;
 
 fun float bound(float x, float min, float max) {
-  return x;
   if (x < min) {
     return min;
   }
@@ -260,11 +255,11 @@ fun float bound(float x, float min, float max) {
 
 fun float calc_target(float vel, float old_target) {
   bound(vel * 0.5, 0, 1.5) => float new_target;
-  return bound(0.9 * old_target + 0.1 * new_target, 0, 0.8);
+  return bound(0.9 * old_target + 0.1 * new_target, 0, 2);
 }
 
 fun float calc_gain(float target, float old_gain) {
-  return bound(old_gain + (target - old_gain) * 0.05, 0, 0.8);
+  return bound(old_gain + (target - old_gain) * 0.05, 0, 2);
 }
 
 Note held[2];
@@ -279,15 +274,18 @@ while(true){
   if (gt.pedalReleased) {
     <<<"Changing modes">>>;
     0 => gt.pedalReleased;
-    1 - mode => mode;
-    /* if (mode == 0) {
+    (mode + 1) % 3 => mode;
+    if (mode != 1) {
       0 => lc.gain;
       0 => rc.gain;
+      /*p => dac;*/
     } else {  // mode == 1
-    } */
+      /*p =< dac;*/
+    }
   }
+  <<< mode >>>;
   if (mode == 1) {
-    <<<gt.lvelocity, gt.rvelocity, lc.gain(), rc.gain()>>>;
+    // <<<gt.lvelocity, gt.rvelocity, l_gain, r_gain>>>;
     // <<<gt.lvelocity, gt.rvelocity>>>;
     // <<<(now - gt.lastTime)/1::second, gt.lvelocity>>>;
     if ((now - gt.lastTime) > 0.05::second) {
@@ -300,18 +298,19 @@ while(true){
     calc_gain(l_target, l_gain) => l_gain;
     calc_gain(r_target, r_gain) => r_gain;
 
-    l_gain * 0.005 => lc.gain;
-    r_gain * 0.005 => rc.gain;
-  else if (mode == 0) {
+    l_gain * 0.02 => lc.gain;
+    r_gain * 0.02 => rc.gain;
+  } else if (mode == 0) {
     play(gt.rx, gt.ry, gt.rz, gt.prev_rx, gt.prev_ry, gt.prev_rz, scale, held[0], 0) @=> held[0];
     play(gt.lx, gt.ly, gt.lz, gt.prev_lx, gt.prev_ly, gt.prev_lz, scale, held[1], 1) @=> held[1];
     gt.rx => gt.prev_rx; gt.ry => gt.prev_ry; gt.rz => gt.prev_rz;
     gt.lx => gt.prev_lx; gt.ly => gt.prev_ly; gt.lz => gt.prev_lz;
-  } else {
-    play(gt.rx, gt.ry, gt.rz, gt.prev_rx, gt.prev_ry, gt.prev_rz, scale_1, held[0], 0) @=> held[0];
-    play(gt.lx, gt.ly, gt.lz, gt.prev_lx, gt.prev_ly, gt.prev_lz, scale_1, held[1], 1) @=> held[1];
+  } else {  // mode == 2
+    play(gt.rx, gt.ry, gt.rz, gt.prev_rx, gt.prev_ry, gt.prev_rz, scale_2, held[0], 0) @=> held[0];
+    play(gt.lx, gt.ly, gt.lz, gt.prev_lx, gt.prev_ly, gt.prev_lz, scale_2, held[1], 1) @=> held[1];
     gt.rx => gt.prev_rx; gt.ry => gt.prev_ry; gt.rz => gt.prev_rz;
     gt.lx => gt.prev_lx; gt.ly => gt.prev_ly; gt.lz => gt.prev_lz;
   }
+
   10::ms => now;
 }
